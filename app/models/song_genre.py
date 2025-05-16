@@ -1,6 +1,7 @@
 import sys
 
 sys.path.append("..")
+
 from sqlalchemy import Column, ForeignKey, Integer, Table
 
 from app.models import MusicBase

@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class Genre(MusicBase):
-    __tablename__ = "genres"
+    __tablename__: str = "genres"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
