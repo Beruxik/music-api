@@ -49,6 +49,7 @@ def insert_data(session: Session) -> None:
     """
     # Cache genres to avoid duplicate queries and inserts
     genre_cache = {}
+    song_cache = {}
 
     for directory in pathlib.Path("static/music").iterdir():
         for file in directory.glob("*.webm"):
@@ -73,14 +74,27 @@ def insert_data(session: Session) -> None:
             artist = file_name.split(" - ")[0].strip()
             file_path = str(file)
 
-            song = Song(
-                title=title,
-                artist=artist,
-                file_path=file_path,
-            )
+            # Check if genre exists in our cache or fetch/create it
+            if file_path not in song_cache:
+                # Try to find the genre in the database
+                existing_song = (
+                    session.query(Song).filter_by(file_path=file_path).first()
+                )
+                if existing_song:
+                    # Use existing genre
+                    song_cache[file_path] = existing_song
+                else:
+                    # Create new genre
+                    new_song = Song(
+                        title=title,
+                        artist=artist,
+                        file_path=file_path,
+                    )
 
-            song.genres.append(genre_cache[genre_name])
-            session.add(song)
+                    new_song.genres.append(genre_cache[genre_name])
+                    session.add(new_song)
+                    session.flush()  # Get ID before using the relation
+                    song_cache[file_path] = new_song
 
 
 if __name__ == "__main__":
