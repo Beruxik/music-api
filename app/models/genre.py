@@ -16,13 +16,13 @@ class Genre(MusicBase, table=True):
     A model representing a genre in the music database.
     """
 
-    id: int = Field(default=None, primary_key=True)
-    name: str
-    songs: list["Song"] = Relationship(
+    id: int | None = Field(default=None, primary_key=True)
+    name: str | None
+    songs: list["Song"] | None = Relationship(
         back_populates="genres",
         link_model=SongGenreLink,
     )
-    preferences: list["Preference"] = Relationship(
+    preferences: list["Preference"] | None = Relationship(
         back_populates="genres",
         link_model=PreferenceGenreLink,
     )

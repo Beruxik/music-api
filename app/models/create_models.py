@@ -13,6 +13,7 @@ logger = setup_logger(__name__)
 
 def create_models() -> None:
     # Create the models
+    MusicBase.metadata.drop_all(engine)
     MusicBase.metadata.create_all(engine)
 
 

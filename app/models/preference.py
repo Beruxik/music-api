@@ -15,13 +15,13 @@ class Preference(MusicBase, table=True):
     A model representing a preference in the music database.
     """
 
-    id: int = Field(default=None, primary_key=True)
-    title: str
-    songs: list["Song"] = Relationship(
+    id: int | None = Field(default=None, primary_key=True)
+    title: str | None
+    songs: list["Song"] | None = Relationship(
         back_populates="preferences",
         link_model=SongPreferenceLink,
     )
-    genres: list["Genre"] = Relationship(
+    genres: list["Genre"] | None = Relationship(
         back_populates="preferences",
         link_model=PreferenceGenreLink,
     )

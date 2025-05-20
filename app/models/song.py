@@ -16,14 +16,14 @@ class Song(MusicBase, table=True):
     """
 
     id: int = Field(default=None, primary_key=True)
-    title: str
-    artist: str
-    file_path: str
-    genres: list["Genre"] = Relationship(
+    title: str | None
+    artist: str | None
+    file_path: str | None
+    genres: list["Genre"] | None = Relationship(
         back_populates="songs",
         link_model=SongGenreLink,
     )
-    preferences: list["Preference"] = Relationship(
+    preferences: list["Preference"] | None = Relationship(
         back_populates="songs",
         link_model=SongPreferenceLink,
     )

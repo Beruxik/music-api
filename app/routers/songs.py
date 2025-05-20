@@ -1,9 +1,15 @@
-from fastapi import APIRouter
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Session
+import random
+from typing import Annotated
+
+from fastapi import APIRouter, Depends
+from sqlmodel import Session, select
 
 from app.config import setup_logger
+from app.database import get_session
 from app.models import Song
+
+SessionDep = Annotated[Session, Depends(get_session)]
+logger = setup_logger(__name__)
 
 router = APIRouter(
     prefix="/songs",
@@ -11,22 +17,11 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-engine = create_engine("sqlite:///music.db", echo=True)
-logger = setup_logger(__name__)
-
 
 @router.get("/random")
-async def get_random_songs() -> dict:
-    """
-    Get a random song from the database.
-    """
-    songs = []
-    # Assuming you have a function to get a random song
-    with Session(engine) as session:
-        stmt = select(Song)
-        for row in session.execute(stmt):
-            song = [r for r in row]
-            songs.append(song)
-    logger.info(f"Random songs: {songs}")
-
-    return {"song": "test"}
+def read_songs(
+    session: SessionDep,
+    limit: int = 10,
+) -> list[Song]:
+    songs = session.exec(select(Song)).all()
+    return random.sample(songs, limit)
