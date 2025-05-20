@@ -1,14 +1,24 @@
 import sys
 
+from sqlmodel import Field
+
 sys.path.append("..")
-
-from sqlalchemy import Column, ForeignKey, Integer, Table
-
 from app.models import MusicBase
 
-song_genre: Table = Table(
-    "song_genre",
-    MusicBase.metadata,
-    Column("song_id", Integer, ForeignKey("songs.id"), primary_key=True),
-    Column("genre_id", Integer, ForeignKey("genres.id"), primary_key=True),
-)
+
+class SongGenreLink(MusicBase, table=True):
+    """
+    A model representing the relationship between a song and a genre.
+    This model is used to link songs to genres in the database.
+    """
+
+    song_id: int | None = Field(
+        default=None,
+        primary_key=True,
+        foreign_key="song.id",
+    )
+    genre_id: int | None = Field(
+        default=None,
+        primary_key=True,
+        foreign_key="genre.id",
+    )

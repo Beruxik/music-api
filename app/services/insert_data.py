@@ -2,8 +2,7 @@ import pathlib
 import re
 import sys
 
-from sqlalchemy import Engine, create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlmodel import Session, create_engine, select
 
 sys.path.append("..")
 
@@ -54,11 +53,14 @@ def insert_data(session: Session) -> None:
     for directory in pathlib.Path("static/music").iterdir():
         for file in directory.glob("*.webm"):
             genre_name = file.parent.name.split("/")[-1]
+            file_path = str(file)  # Get file_path early to use for lookup
 
             # Check if genre exists in our cache or fetch/create it
             if genre_name not in genre_cache:
                 # Try to find the genre in the database
-                existing_genre = session.query(Genre).filter_by(name=genre_name).first()
+                existing_genre = session.exec(
+                    select(Genre).where(Genre.name == genre_name),
+                ).first()
                 if existing_genre:
                     # Use existing genre
                     genre_cache[genre_name] = existing_genre
@@ -69,38 +71,47 @@ def insert_data(session: Session) -> None:
                     session.flush()  # Get ID before using the relation
                     genre_cache[genre_name] = new_genre
 
-            file_name = remove_enclosed_text(file.stem, "([", ")]")
-            title = file_name.split(" - ")[-1].strip()
-            artist = file_name.split(" - ")[0].strip()
-            file_path = str(file)
-
-            # Check if genre exists in our cache or fetch/create it
+            # Check if song already exists by file path
             if file_path not in song_cache:
-                # Try to find the genre in the database
-                existing_song = (
-                    session.query(Song).filter_by(file_path=file_path).first()
-                )
+                existing_song = session.exec(
+                    select(Song).where(Song.file_path == file_path),
+                ).first()
                 if existing_song:
-                    # Use existing genre
+                    # Use existing song
                     song_cache[file_path] = existing_song
-                else:
-                    # Create new genre
-                    new_song = Song(
-                        title=title,
-                        artist=artist,
-                        file_path=file_path,
-                    )
+                    continue  # Skip to next file
 
-                    new_song.genres.append(genre_cache[genre_name])
-                    session.add(new_song)
-                    session.flush()  # Get ID before using the relation
-                    song_cache[file_path] = new_song
+                # Process new song
+                file_name = remove_enclosed_text(file.stem, "([", ")]")
+                title = (
+                    file_name.split(" - ")[-1].strip()
+                    if " - " in file_name
+                    else file_name
+                )
+                artist = (
+                    file_name.split(" - ")[0].strip()
+                    if " - " in file_name
+                    else "Unknown Artist"
+                )
+
+                # Create new song
+                new_song = Song(
+                    title=title,
+                    artist=artist,
+                    file_path=file_path,
+                )
+
+                # Add genre to song
+                new_song.genres.append(genre_cache[genre_name])
+                session.add(new_song)
+                session.flush()  # Get ID before using the relation
+                song_cache[file_path] = new_song
 
 
 if __name__ == "__main__":
-    engine: Engine = create_engine("sqlite:///music.db")
+    engine = create_engine("sqlite:///music.db")
     # Create a new session
-    session: Session = sessionmaker(engine)()
+    session: Session = Session(engine)
 
     try:
         # Call the insert_data function

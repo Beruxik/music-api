@@ -2,13 +2,13 @@ import sys
 
 sys.path.append("..")
 
-from sqlalchemy import create_engine
+from sqlmodel import create_engine
 
 from app.config import setup_logger
 from app.models import MusicBase
 
 engine = create_engine("sqlite:///music.db", echo=True)
-logger = setup_logger()
+logger = setup_logger(__name__)
 
 
 def create_models() -> None:

@@ -1,26 +1,28 @@
 import sys
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlmodel import Field, Relationship
+
+from app.models import MusicBase, PreferenceGenreLink, SongGenreLink
 
 sys.path.append("..")
-from app.models import MusicBase, preference_genre, song_genre
 
 if TYPE_CHECKING:
     from app.models import Preference, Song
 
 
-class Genre(MusicBase):
-    __tablename__: str = "genres"
+class Genre(MusicBase, table=True):
+    """
+    A model representing a genre in the music database.
+    """
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    songs: Mapped[list["Song"]] = relationship(
+    id: int = Field(default=None, primary_key=True)
+    name: str
+    songs: list["Song"] = Relationship(
         back_populates="genres",
-        secondary=song_genre,
+        link_model=SongGenreLink,
     )
-    preferences: Mapped[list["Preference"]] = relationship(
+    preferences: list["Preference"] = Relationship(
         back_populates="genres",
-        secondary=preference_genre,
+        link_model=PreferenceGenreLink,
     )
