@@ -20,7 +20,7 @@ class PreferenceResponse(MusicBase):
     title: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
