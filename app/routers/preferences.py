@@ -14,6 +14,10 @@ class PreferenceCreate(MusicBase):
     genres: list[str]  # List of genre IDs to associate with this preference
 
 
+class PreferenceUpdate(MusicBase):
+    title: str | None = None
+
+
 # Response models
 class PreferenceResponse(MusicBase):
     id: int
@@ -96,3 +100,24 @@ def delete_preference(
     session.delete(preference)
     session.commit()
     return {"ok": True}
+
+
+@router.patch("/{preference_id}")
+def update_preference(
+    preference_id: int,
+    preference: PreferenceUpdate,
+    session: SessionDep,
+) -> Preference:
+    """
+    Update a preference by ID.
+    """
+    db_preference = session.get(Preference, preference_id)
+    if not db_preference:
+        raise HTTPException(status_code=404, detail="Preference not found")
+    preference_data = preference.model_dump(exclude_unset=True)
+    logger.info(preference_data)
+    db_preference.sqlmodel_update(preference_data)
+    session.add(db_preference)
+    session.commit()
+    session.refresh(db_preference)
+    return db_preference
