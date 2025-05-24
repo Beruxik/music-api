@@ -79,3 +79,20 @@ def create_preferences(
     session.commit()
     session.refresh(new_preference)
     return new_preference
+
+
+@router.delete("/{preference_id}")
+def delete_preference(
+    preference_id: int,
+    session: SessionDep,
+) -> None:
+    """
+    Delete a preference by ID.
+    """
+    preference = session.get(Preference, preference_id)
+    if not preference:
+        raise HTTPException(status_code=404, detail="Preference not found")
+
+    session.delete(preference)
+    session.commit()
+    return {"ok": True}
