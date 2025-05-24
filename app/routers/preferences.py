@@ -23,6 +23,10 @@ class PreferenceResponse(MusicBase):
         from_attributes = True
 
 
+class PreferenceWithGenresResponse(PreferenceResponse):
+    genres: list[str]  # List of genre names associated with this preference
+
+
 SessionDep = Annotated[Session, Depends(get_session)]
 logger = setup_logger(__name__)
 
@@ -31,6 +35,27 @@ router = APIRouter(
     tags=["preferences"],
     responses={404: {"description": "Not found"}},
 )
+
+
+@router.get("/")
+def read_preferences(
+    session: SessionDep,
+) -> list[PreferenceWithGenresResponse]:
+    """
+    Retrieve all preferences.
+    """
+    preferences = session.exec(select(Preference)).all()
+
+    preferences_with_genres = [
+        {
+            "id": preference.id,
+            "title": preference.title,
+            "genres": [genres.name for genres in preference.genres],
+        }
+        for preference in preferences
+    ]
+
+    return preferences_with_genres  # noqa: RET504
 
 
 @router.post("/")
