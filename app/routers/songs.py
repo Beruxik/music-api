@@ -6,7 +6,19 @@ from sqlmodel import Session, select
 
 from app.config import setup_logger
 from app.database import get_session
-from app.models import PreferenceGenreLink, Song, SongGenreLink
+from app.models import MusicBase, PreferenceGenreLink, Song, SongGenreLink
+
+
+class SongResponse(MusicBase):
+    id: int
+    title: str
+    artist: str
+    file_path: str
+    genre: str
+
+    class Config:
+        from_attributes = True
+
 
 SessionDep = Annotated[Session, Depends(get_session)]
 logger = setup_logger(__name__)
@@ -22,9 +34,19 @@ router = APIRouter(
 def read_songs(
     session: SessionDep,
     limit: int = 10,
-) -> list[Song]:
+) -> list[SongResponse]:
     songs = session.exec(select(Song)).all()
-    return random.sample(songs, min(limit, len(songs)))
+    songs_with_genres = [
+        {
+            "id": song.id,
+            "title": song.title,
+            "artist": song.artist,
+            "file_path": song.file_path,
+            "genre": next(genres.name for genres in song.genres),
+        }
+        for song in songs
+    ]
+    return random.sample(songs_with_genres, min(limit, len(songs)))
 
 
 @router.get("/{preference_id}")
@@ -33,7 +55,7 @@ def read_songs_by_preference(
     session: SessionDep,
     offset: int = 0,
     limit: Annotated[int, Query(le=10)] = 10,
-) -> list[Song]:
+) -> list[SongResponse]:
     songs = session.exec(
         select(Song)
         .join(SongGenreLink, SongGenreLink.song_id == Song.id)
@@ -47,4 +69,16 @@ def read_songs_by_preference(
         .offset(offset)
         .limit(limit),
     ).all()
-    return songs  # noqa: RET504
+
+    songs_with_genres = [
+        {
+            "id": song.id,
+            "title": song.title,
+            "artist": song.artist,
+            "file_path": song.file_path,
+            "genre": next(genres.name for genres in song.genres),
+        }
+        for song in songs
+    ]
+
+    return songs_with_genres  # noqa: RET504
