@@ -24,7 +24,7 @@ def read_songs(
     limit: int = 10,
 ) -> list[Song]:
     songs = session.exec(select(Song)).all()
-    return random.sample(songs, limit)
+    return random.sample(songs, min(limit, len(songs)))
 
 
 @router.get("/{preference_id}")
