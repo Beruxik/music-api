@@ -100,7 +100,7 @@ GET /songs/random?limit=10
     "id": 1,
     "title": "Levels",
     "artist": "Avicii",
-    "file_path": "static/music/electronic/Avicii - Levels.webm"
+    "file_path": "static/music/electronic/Avicii - Levels.mp3"
   }
 ]
 ```
@@ -191,13 +191,13 @@ The application uses SQLite with the following main models:
 ```
 app/static/music/
 ├── electronic/
-│   ├── Avicii - Levels.webm
-│   └── Avicii - Wake Me Up.webm
+│   ├── Avicii - Levels.mp3
+│   └── Avicii - Wake Me Up.mp3
 ├── rock/
-│   ├── AC⧸DC - Thunderstruck.webm
-│   └── Nirvana - Smells Like Teen Spirit.webm
+│   ├── AC⧸DC - Thunderstruck.mp3
+│   └── Nirvana - Smells Like Teen Spirit.mp3
 └── pop/
-    └── Taylor Swift - Shake It Off.webm
+    └── Taylor Swift - Shake It Off.mp3
 ```
 
 2. **Run the data import script**:

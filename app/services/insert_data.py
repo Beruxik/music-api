@@ -51,7 +51,7 @@ def insert_data(session: Session) -> None:
     song_cache = {}
 
     for directory in pathlib.Path("static/music").iterdir():
-        for file in directory.glob("*.webm"):
+        for file in directory.glob("*.mp3"):
             genre_name = file.parent.name.split("/")[-1]
             file_path = str(file)  # Get file_path early to use for lookup
 
